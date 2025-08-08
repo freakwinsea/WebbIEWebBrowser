@@ -801,7 +801,7 @@ Partial Class frmMain
     Friend WithEvents btnBack As System.Windows.Forms.ToolStripButton
     Friend WithEvents btnHeading As System.Windows.Forms.ToolStripButton
     Friend WithEvents pnlMain As System.Windows.Forms.Panel
-    Friend WithEvents txtText As System.Windows.Forms.RichTextBox
+    Public WithEvents txtText As System.Windows.Forms.RichTextBox
     Friend WithEvents btnStop As System.Windows.Forms.ToolStripButton
     Friend WithEvents btnRefresh As System.Windows.Forms.ToolStripButton
     Friend WithEvents btnHome As System.Windows.Forms.ToolStripButton
