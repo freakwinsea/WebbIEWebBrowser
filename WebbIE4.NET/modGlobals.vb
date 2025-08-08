@@ -67,6 +67,10 @@ Module modGlobals
     ''' The main Windows Form hosting the WebBrowser that does all the work.
     ''' </summary>
     Public gWebHost As frmWeb
+    ''' <summary>
+    ''' A global reference to the main application form.
+    ''' </summary>
+    Public gFrmMain As frmMain
 
     ''' <summary>
     ''' The only time that frmWeb is allowed to get focus is when we are trying
@@ -141,94 +145,16 @@ Module modGlobals
     ''' <remarks></remarks>
     Public gFrmWebHasFocusAndItShouldNot As Boolean = False
 
-    Structure linkStruct
-        ''' <summary>
-        ''' link description
-        ''' </summary>
-        Dim description As String
-        ''' <summary>
-        ''' link address e.g. www.orange.net
-        ''' </summary>
-        Dim address As String
-        ''' <summary>
-        ''' target of link
-        ''' </summary>
-        Dim target As String
-        ''' <summary>
-        ''' index of frame in which link resides
-        ''' </summary>
-        Dim frameIndex As Integer
-        ''' <summary>
-        ''' the link element
-        ''' </summary>
-        Dim element As mshtml.IHTMLElement
-    End Structure
-
-    Structure targetStruct
-        ''' <summary>
-        ''' the text following/contained in the target anchor
-        ''' </summary>
-        Dim idText As String
-        ''' <summary>
-        ''' the name Of the anchor
-        ''' </summary>
-        Dim name As String
-    End Structure
-
-    Structure selectStruct
-        ''' <summary>
-        ''' Name of menu
-        ''' </summary>
-        Dim name As String
-        ''' <summary>
-        ''' the options in the select/combo
-        ''' </summary>
-        <VBFixedArray(300)> Dim options() As String
-        ''' <summary>
-        ''' the number of the option which is selected
-        ''' </summary>
-        Dim selected As Integer
-        ''' <summary>
-        ''' number of options in menu
-        ''' </summary>
-        Dim size As Integer
-        ''' <summary>
-        ''' the node in the DOM
-        ''' </summary>
-        Dim node As mshtml.IHTMLSelectElement
-
-        Public Sub Initialize()
-            ReDim options(300)
-        End Sub
-    End Structure
-
     ''' <summary>
-    ''' A frame
+    ''' The list of all interactable elements found on the current page.
+    ''' This replaces the numerous old arrays like gLinks, selects, etc.
     ''' </summary>
-    Structure frameStruct
-        Dim name As String
-        Dim url As String
-        Dim Document As mshtml.IHTMLDocument2
-        Dim target As Boolean
-    End Structure
+    Public gInteractableElements As List(Of InteractableElement)
 
     ''' <summary>
     ''' the text searched for in a page by the user
     ''' </summary>
     Public gfindText As String
-
-    'Nb: the indexing number (i) must match the input number
-    Public textInput(MAX_NUMBER_TEXT_INPUTS_SUPPORTED - 1) As mshtml.IHTMLElement 'text input name & number
-    Public numTextInputs As Integer 'number of text boxes on page
-
-    Public emailInput(MAX_NUMBER_EMAIL_INPUTS_SUPPORTED - 1) As mshtml.IHTMLElement ' email input name and number
-    Public numEmailInputs As Integer ' number of email inputs on page
-
-    Public rangeInput(MAX_NUMBER_RANGE_INPUTS_SUPPORTED - 1) As mshtml.IHTMLElement ' range input
-    Public numRangeInputs As Integer
-
-    Public searchInput(MAX_NUMBER_SEARCH_INPUTS_SUPPORTED) As mshtml.IHTMLElement ' search textbox input from html5
-    Public numSearchInputs As Integer ' number of search boxes on page.
 
     Public gImageHrefs As Collection ' contains the alt text for each image
 
@@ -243,55 +169,6 @@ Module modGlobals
     ''' </summary>
     ''' <remarks></remarks>
     Public gPageHasMain As Boolean
-
-    Public passwordInput(0 To MAX_NUMBER_PASSWORD_INPUTS_SUPPORTED - 1) As mshtml.IHTMLElement 'password input name & number
-    Public numPassInputs As Integer 'number of password boxes on page
-	
-    Public submitInput(0 To MAX_NUMBER_SUBMITS_SUPPORTED - 1) As mshtml.IHTMLElement 'submit input name & number
-    Public numSubmitInputs As Integer 'number of submits on this page
-	
-    Public radioInput(0 To 499) As mshtml.IHTMLElement 'radio input name & number
-    Public numRadioInputs As Integer
-	
-    Public videos(0 To MAX_NUMBER_VIDEOS_SUPPORTED - 1) As mshtml.IHTMLElement
-    Public numVideos As Integer
-
-    Public audios(0 To MAX_NUMBER_AUDIOS_SUPPORTED - 1) As mshtml.IHTMLElement
-    Public numAudios As Integer
-
-    Public checkboxInput(0 To 499) As mshtml.IHTMLInputElement 'checkbox input name & number
-    Public numCheckboxInputs As Integer 'number of checkboxes on page
-	
-    Public resetInput(0 To MAX_NUMBER_RESET_INPUTS_SUPPORTED - 1) As mshtml.IHTMLElement 'reset button name and number
-    Public numResetInputs As Integer 'number of resets on page
-	
-    Public buttonInput(0 To MAX_NUMBER_BUTTON_INPUTS_SUPPORTED - 1) As mshtml.IHTMLElement ' input button control
-    Public numButtonInputs As Integer ' number of input buttons on page
-	
-    Public fileInput(0 To MAX_NUMBER_FILE_INPUTS_SUPPORTED - 1) As mshtml.IHTMLElement ' file selection control
-    Public numFileInputs As Integer ' number of file selection controls on page
-	
-    Public textAreaInput(0 To MAX_NUMBER_TEXT_AREA_INPUTS_SUPPORTED - 1) As mshtml.IHTMLElement ' text area input
-    Public numTextAreaInputs As Integer
-	
-    Public altText(0 To MAX_NUMBER_LINKS_SUPPORTED - 1) As String 'description for images
-    Public numImages As Integer 'holds number of images
-	
-    Public selects(0 To MAX_NUMBER_SELECTS_SUPPORTED - 1) As selectStruct 'combo boxes
-    Public numSelects As Integer
-	
-    Public gLinks(0 To MAX_NUMBER_LINKS_SUPPORTED - 1) As linkStruct
-    Public gSortedLink(0 To MAX_NUMBER_LINKS_SUPPORTED - 1) As linkStruct 'sorted alphabetically
-    Public gNumLinks As Integer
-	
-	Public targets(599) As targetStruct
-    Public numTargets As Integer
-	
-    Public numForms As Integer
-	
-
-    Public tables(0 To MAX_NUMBER_TABLES_SUPPORTED) As mshtml.IHTMLElement
-    Public numTables As Integer
 	
     Public gCurrentHomepage As String 'the current IE homepage
 	

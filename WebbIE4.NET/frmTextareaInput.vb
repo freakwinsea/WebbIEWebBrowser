@@ -18,20 +18,26 @@ Friend Class frmTextareaInput
 	'    along with WebbIE.  If not, see <http://www.gnu.org/licenses/>.
 	
 	
-	Private mobjTextAreaNode As mshtml.IHTMLDOMNode ' the text area node we're working on
     Public gAreaLabel As String ' holds any label given the input by the page
+    Public TargetElementId As String
 	
     Private Sub cmdCancel_Click(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs) Handles cmdCancel.Click
         On Error Resume Next
         Call Me.Hide()
     End Sub
 
-    Private Sub cmdOK_Click(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs) Handles cmdOK.Click
-        On Error Resume Next
-        'exit the form
-
-        Call Me.Hide()
-        Call frmMain.UpdateTextarea((txtInput.Text), mobjTextAreaNode)
+    Private Async Sub cmdOK_Click(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs) Handles cmdOK.Click
+        Try
+            'exit the form
+            Call Me.Hide()
+            Await frmMain.SetElementValueAsync(TargetElementId, txtInput.Text)
+            'Fire change and input events to let any javascript on the page know the value has changed
+            Dim eventScript As String = $"var el = document.querySelector('[data-webbie-id=""{TargetElementId}""]'); el.dispatchEvent(new Event('input', {{ bubbles: true }})); el.dispatchEvent(new Event('change', {{ bubbles: true }}));"
+            Await modGlobals.gWebHost.webMain.CoreWebView2.ExecuteScriptAsync(eventScript)
+            Call frmMain.DoDelayedRefresh()
+        Catch ex As Exception
+            Debug.Print("Error in frmTextareaInput.cmdOK_Click: " & ex.Message)
+        End Try
     End Sub
 
     Private Sub frmTextareaInput_Activated(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs) Handles MyBase.Activated
@@ -55,14 +61,10 @@ Friend Class frmTextareaInput
         End Try
     End Sub
 
-    Public Sub Populate(ByRef textAreaNode As mshtml.IHTMLDOMNode)
+    Public Sub PopulateWithText(ByVal initialText As String)
         Try
             'show the original text
-            Dim e As mshtml.IHTMLElement
-
-            e = CType(textAreaNode, mshtml.IHTMLElement)
-            txtInput.Text = e.innerText
-            mobjTextAreaNode = textAreaNode
+            txtInput.Text = initialText
         Catch
         End Try
     End Sub

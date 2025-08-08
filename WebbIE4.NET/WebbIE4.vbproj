@@ -105,7 +105,6 @@
   <ItemGroup>
     <Compile Include="ApplicationEvents.vb" />
     <Compile Include="AssemblyInfo.vb" />
-    <Compile Include="clsCrossFrameIE.vb" />
     <Compile Include="frmColourSelect.Designer.vb">
       <DependentUpon>frmColourSelect.vb</DependentUpon>
     </Compile>
@@ -281,7 +280,6 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="NativeMethods.vb" />
-    <Compile Include="WebBrowserUtility.vb" />
     <None Include="Resources\Image1.bmp" />
     <None Include="webbie4.png" />
     <Content Include="webbie4htmldoc.ico">
@@ -379,6 +377,7 @@
       <DependentUpon>frmWeb.vb</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="Scripts\dom-parser.js" />
     <EmbeddedResource Include="My Project\Resources.resx">
       <CustomToolNamespace>My.Resources</CustomToolNamespace>
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
@@ -465,6 +464,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2210.55" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

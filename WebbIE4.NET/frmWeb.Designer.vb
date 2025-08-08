@@ -1,4 +1,4 @@
-﻿<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
+<Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
 Partial Class frmWeb
     Inherits System.Windows.Forms.Form
 
@@ -24,23 +24,26 @@ Partial Class frmWeb
     Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container()
         Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(frmWeb))
-        Me.webMain = New System.Windows.Forms.WebBrowser()
+        Me.webMain = New Microsoft.Web.WebView2.WinForms.WebView2()
         Me.btnCancel = New System.Windows.Forms.Button()
         Me.tmrCheckForEscape = New System.Windows.Forms.Timer(Me.components)
         Me.tmrCheckForClosing = New System.Windows.Forms.Timer(Me.components)
         Me.tmrCheckForNavigating = New System.Windows.Forms.Timer(Me.components)
         Me.tmrCheckForNavigationComplete = New System.Windows.Forms.Timer(Me.components)
+        CType(Me.webMain, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
         'webMain
         '
+        Me.webMain.AllowExternalDrop = True
+        Me.webMain.CreationProperties = Nothing
+        Me.webMain.DefaultBackgroundColor = System.Drawing.Color.White
         Me.webMain.Dock = System.Windows.Forms.DockStyle.Fill
         Me.webMain.Location = New System.Drawing.Point(0, 0)
-        Me.webMain.MinimumSize = New System.Drawing.Size(20, 20)
         Me.webMain.Name = "webMain"
-        Me.webMain.ScriptErrorsSuppressed = True
         Me.webMain.Size = New System.Drawing.Size(806, 337)
         Me.webMain.TabIndex = 0
+        Me.webMain.ZoomFactor = 1.0
         '
         'btnCancel
         '
@@ -86,10 +89,11 @@ Partial Class frmWeb
         Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         Me.Text = "WebbIE"
         Me.WindowState = System.Windows.Forms.FormWindowState.Maximized
+        CType(Me.webMain, System.ComponentModel.ISupportInitialize).EndInit()
         Me.ResumeLayout(False)
 
     End Sub
-    Friend WithEvents webMain As System.Windows.Forms.WebBrowser
+    Friend WithEvents webMain As Microsoft.Web.WebView2.WinForms.WebView2
     Friend WithEvents btnCancel As System.Windows.Forms.Button
     Friend WithEvents tmrCheckForEscape As System.Windows.Forms.Timer
     Friend WithEvents tmrCheckForClosing As System.Windows.Forms.Timer

@@ -536,7 +536,8 @@ Partial Class frmMain
         '
         Me.MainToolStrip.AutoSize = False
         Me.MainToolStrip.ImageScalingSize = New System.Drawing.Size(32, 32)
-        Me.MainToolStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.btnBack, Me.btnStop, Me.btnRefresh, Me.btnHome, Me.btnSearch, Me.ToolStripSeparator1, Me.btnCrop, Me.btnHeading, Me.picBusy, Me.btnSkiplinks, Me.ToolStripSeparator2, Me.btnRSS})
+        Me.btnAskAI = New System.Windows.Forms.ToolStripButton()
+        Me.MainToolStrip.Items.AddRange(New System.Windows.Forms.ToolStripItem() {Me.btnBack, Me.btnStop, Me.btnRefresh, Me.btnHome, Me.btnSearch, Me.btnAskAI, Me.ToolStripSeparator1, Me.btnCrop, Me.btnHeading, Me.picBusy, Me.btnSkiplinks, Me.ToolStripSeparator2, Me.btnRSS})
         Me.MainToolStrip.Location = New System.Drawing.Point(0, 63)
         Me.MainToolStrip.Name = "MainToolStrip"
         Me.MainToolStrip.Size = New System.Drawing.Size(1362, 90)
@@ -602,6 +603,17 @@ Partial Class frmMain
         Me.btnSearch.Size = New System.Drawing.Size(152, 87)
         Me.btnSearch.Text = "Search"
         Me.btnSearch.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText
+        '
+        'btnAskAI
+        '
+        Me.btnAskAI.Font = New System.Drawing.Font("Segoe UI", 15.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.btnAskAI.Image = Global.WebbIE4.My.Resources.Resources.magnify ' Placeholder icon
+        Me.btnAskAI.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None
+        Me.btnAskAI.ImageTransparentColor = System.Drawing.Color.Magenta
+        Me.btnAskAI.Name = "btnAskAI"
+        Me.btnAskAI.Size = New System.Drawing.Size(152, 87)
+        Me.btnAskAI.Text = "Ask AI"
+        Me.btnAskAI.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageAboveText
         '
         'ToolStripSeparator1
         '
@@ -821,6 +833,7 @@ Partial Class frmMain
     Friend WithEvents tmrDelayLoadBookmarks As System.Windows.Forms.Timer
     Friend WithEvents mnuOptionsColour As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents mnuHelpTeamviewer As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents btnAskAI As System.Windows.Forms.ToolStripButton
 
 #End Region
 End Class

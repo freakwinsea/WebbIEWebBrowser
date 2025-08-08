@@ -1,5 +1,18 @@
 Option Strict On
 Option Explicit On
+
+Imports Newtonsoft.Json
+
+Public Class SelectData
+    Public Property options As List(Of OptionData)
+    Public Property selectedIndex As Integer
+End Class
+
+Public Class OptionData
+    Public Property text As String
+    Public Property value As String
+End Class
+
 Friend Class frmSelect
 	Inherits System.Windows.Forms.Form
 	'   This file is part of WebbIE.
@@ -21,7 +34,7 @@ Friend Class frmSelect
 	'box in a webpage.   Alasdair 20 September 2002
 	
 	
-    Private mSelectNumber As Integer ' the index of the select item in the selects array
+    Private _elementId As String
     Public gTargetForm As frmMain
 
     Private Sub cmdCancel_Click(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs) Handles cmdCancel.Click
@@ -29,10 +42,23 @@ Friend Class frmSelect
         Call Me.Hide()
     End Sub
 
-    Private Sub cmdOKfrmSelect_Click(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs) Handles cmdOKfrmSelect.Click
-        On Error Resume Next
-        Call frmMain.UpdateSelection(mSelectNumber, lstSelect.SelectedIndex + 1)
-        Call Me.Hide()
+    Private Async Sub cmdOKfrmSelect_Click(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs) Handles cmdOKfrmSelect.Click
+        Try
+            Dim selectedIndex As Integer = lstSelect.SelectedIndex
+            If selectedIndex = -1 Then Return
+
+            Dim script As String = $"document.querySelector('[data-webbie-id=""{_elementId}""]').selectedIndex = {selectedIndex};"
+            Await modGlobals.gWebHost.webMain.CoreWebView2.ExecuteScriptAsync(script)
+
+            ' Fire the 'change' event to trigger any JavaScript listeners
+            Dim eventScript As String = $"var event = new Event('change', {{ 'bubbles': true, 'cancelable': true }}); document.querySelector('[data-webbie-id=""{_elementId}""]').dispatchEvent(event);"
+            Await modGlobals.gWebHost.webMain.CoreWebView2.ExecuteScriptAsync(eventScript)
+
+            Call frmMain.DoDelayedRefresh()
+            Call Me.Hide()
+        Catch ex As Exception
+            Debug.Print("Error in cmdOKfrmSelect_Click: " & ex.Message)
+        End Try
     End Sub
 
     Private Sub frmSelect_Activated(ByVal eventSender As System.Object, ByVal eventArgs As System.EventArgs) Handles MyBase.Activated
@@ -48,20 +74,42 @@ Friend Class frmSelect
         If KeyCode = System.Windows.Forms.Keys.Escape Then Me.Hide()
     End Sub
 
-    Public Sub Populate(ByRef sNumber As Integer)
+    Public Async Sub Populate(ByVal elementId As String)
         Try
-            Dim i As Integer ' counter
+            _elementId = elementId
 
-            mSelectNumber = sNumber
-            'clear the list
-            Call lstSelect.Items.Clear()
-            'populate the list
-            For i = 1 To selects(mSelectNumber).size
-                Call lstSelect.Items.Add(selects(mSelectNumber).options(i))
-            Next i
-            'select the current item
-            lstSelect.SelectedIndex = selects(mSelectNumber).selected - 1
-        Catch
+            ' Clear the listbox
+            lstSelect.Items.Clear()
+
+            ' Create the script to get options from the select element
+            Dim script As String = $"(function() {{
+                const select = document.querySelector('[data-webbie-id=""{elementId}""]');
+                if (!select) return null;
+                const options = Array.from(select.options).map(opt => ({{ text: opt.text, value: opt.value }}));
+                return JSON.stringify({{ options: options, selectedIndex: select.selectedIndex }});
+            }})();"
+
+            ' Execute the script and get the JSON result
+            Dim jsonResult As String = Await modGlobals.gWebHost.webMain.CoreWebView2.ExecuteScriptAsync(script)
+            If String.IsNullOrWhiteSpace(jsonResult) OrElse jsonResult = "null" Then Return
+
+            ' Deserialize the JSON string, and then the data within it
+            Dim jsonContent As String = JsonConvert.DeserializeObject(Of String)(jsonResult)
+            Dim data As SelectData = JsonConvert.DeserializeObject(Of SelectData)(jsonContent)
+
+            If data IsNot Nothing AndAlso data.options IsNot Nothing Then
+                ' Populate the list
+                For Each opt As OptionData In data.options
+                    lstSelect.Items.Add(opt.text)
+                Next
+                ' Set the selected item
+                If data.selectedIndex >= 0 AndAlso data.selectedIndex < lstSelect.Items.Count Then
+                    lstSelect.SelectedIndex = data.selectedIndex
+                End If
+            End If
+
+        Catch ex As Exception
+            Debug.Print("Error in frmSelect.Populate: " & ex.Message)
         End Try
     End Sub
 	
@@ -75,7 +123,9 @@ Friend Class frmSelect
             If KeyCode = System.Windows.Forms.Keys.Escape Then
                 'exit form
                 Call Me.Hide()
-                Call Me.gTargetForm.Show()
+                If Me.gTargetForm IsNot Nothing Then
+                    Call Me.gTargetForm.Show()
+                End If
             End If
             If KeyCode = System.Windows.Forms.Keys.Return Or KeyCode = System.Windows.Forms.Keys.Space Then
                 'user has chosen an item
@@ -83,9 +133,6 @@ Friend Class frmSelect
                     'don't do anything - need user to select an item
                 Else
                     'user has selected an item
-                    'set the correct new one in selects
-                    'now return to the main form, telling it to update the page with the
-                    'new selection
                     Call cmdOKfrmSelect_Click(cmdOKfrmSelect, New System.EventArgs())
                 End If
             End If

@@ -25,8 +25,6 @@
         Me.cmdCancel = New System.Windows.Forms.Button()
         Me.pnlControls = New System.Windows.Forms.Panel()
         Me.cmdGo = New System.Windows.Forms.Button()
-        Me.optSortAlphabetical = New System.Windows.Forms.RadioButton()
-        Me.optSortPageOrder = New System.Windows.Forms.RadioButton()
         Me.lstLinks = New System.Windows.Forms.ListBox()
         Me.pnlControls.SuspendLayout()
         Me.SuspendLayout()
@@ -51,8 +49,6 @@
         'pnlControls
         '
         Me.pnlControls.Controls.Add(Me.cmdGo)
-        Me.pnlControls.Controls.Add(Me.optSortAlphabetical)
-        Me.pnlControls.Controls.Add(Me.optSortPageOrder)
         Me.pnlControls.Dock = System.Windows.Forms.DockStyle.Bottom
         Me.pnlControls.Location = New System.Drawing.Point(0, 583)
         Me.pnlControls.Name = "pnlControls"
@@ -73,41 +69,6 @@
         Me.cmdGo.TabIndex = 5
         Me.cmdGo.Text = "Go"
         Me.cmdGo.UseVisualStyleBackColor = False
-        '
-        'optSortAlphabetical
-        '
-        Me.optSortAlphabetical.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.optSortAlphabetical.BackColor = System.Drawing.SystemColors.Control
-        Me.optSortAlphabetical.Cursor = System.Windows.Forms.Cursors.Default
-        Me.optSortAlphabetical.ForeColor = System.Drawing.SystemColors.ControlText
-        Me.optSortAlphabetical.Location = New System.Drawing.Point(14, 70)
-        Me.optSortAlphabetical.Margin = New System.Windows.Forms.Padding(5, 8, 5, 8)
-        Me.optSortAlphabetical.Name = "optSortAlphabetical"
-        Me.optSortAlphabetical.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.optSortAlphabetical.Size = New System.Drawing.Size(562, 77)
-        Me.optSortAlphabetical.TabIndex = 6
-        Me.optSortAlphabetical.TabStop = True
-        Me.optSortAlphabetical.Tag = "frmLinks.optSort(1)"
-        Me.optSortAlphabetical.Text = "Sort by &Alphabetical order"
-        Me.optSortAlphabetical.UseVisualStyleBackColor = False
-        '
-        'optSortPageOrder
-        '
-        Me.optSortPageOrder.Anchor = CType((System.Windows.Forms.AnchorStyles.Bottom Or System.Windows.Forms.AnchorStyles.Left), System.Windows.Forms.AnchorStyles)
-        Me.optSortPageOrder.BackColor = System.Drawing.SystemColors.Control
-        Me.optSortPageOrder.Checked = True
-        Me.optSortPageOrder.Cursor = System.Windows.Forms.Cursors.Default
-        Me.optSortPageOrder.ForeColor = System.Drawing.SystemColors.ControlText
-        Me.optSortPageOrder.Location = New System.Drawing.Point(14, 2)
-        Me.optSortPageOrder.Margin = New System.Windows.Forms.Padding(5, 8, 5, 8)
-        Me.optSortPageOrder.Name = "optSortPageOrder"
-        Me.optSortPageOrder.RightToLeft = System.Windows.Forms.RightToLeft.No
-        Me.optSortPageOrder.Size = New System.Drawing.Size(578, 77)
-        Me.optSortPageOrder.TabIndex = 4
-        Me.optSortPageOrder.TabStop = True
-        Me.optSortPageOrder.Tag = "frmLinks.optSort(0)"
-        Me.optSortPageOrder.Text = "Sort by &Page order"
-        Me.optSortPageOrder.UseVisualStyleBackColor = False
         '
         'lstLinks
         '
@@ -150,8 +111,6 @@
     End Sub
     Friend WithEvents pnlControls As System.Windows.Forms.Panel
     Public WithEvents cmdGo As System.Windows.Forms.Button
-    Public WithEvents optSortAlphabetical As System.Windows.Forms.RadioButton
-    Public WithEvents optSortPageOrder As System.Windows.Forms.RadioButton
     Friend WithEvents lstLinks As System.Windows.Forms.ListBox
 #End Region
 End Class
