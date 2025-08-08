@@ -219,7 +219,7 @@ Public Class frmMain
 
     Private mFormClosing As Boolean = False
 
-    Private Sub DoBack()
+    Public Sub DoBack()
         On Error GoTo cantGoBack
         Dim lineNumber As Integer
         If btnBack.Enabled Then
@@ -259,7 +259,7 @@ cantGoBack:
         Call StopBrowsers()
     End Sub
 
-    Private Sub DoForward()
+    Public Sub DoForward()
         On Error GoTo cantGoForward
         Dim lineNumber As Integer
         'Call PlayNavigationStartSound
