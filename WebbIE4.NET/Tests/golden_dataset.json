@@ -1,0 +1,30 @@
+[
+  {
+    "name": "Simple Click Test",
+    "user_command": "click the login button",
+    "mock_dom_content": "Login button [webbie-id-5]",
+    "expected_tool": "click",
+    "expected_args": ["webbie-id-5"]
+  },
+  {
+    "name": "Simple Type Test",
+    "user_command": "type 'testuser' into the username field",
+    "mock_dom_content": "Username: text input [webbie-id-2]",
+    "expected_tool": "type",
+    "expected_args": ["webbie-id-2", "testuser"]
+  },
+  {
+    "name": "Simple Go To Test",
+    "user_command": "go to google.com",
+    "mock_dom_content": "This is the current page.",
+    "expected_tool": "goto",
+    "expected_args": ["https://www.google.com"]
+  },
+  {
+    "name": "Simple Answer Test",
+    "user_command": "what is the title of this page?",
+    "mock_dom_content": "WEBPAGE: My Awesome Blog",
+    "expected_tool": "answer",
+    "expected_args": ["The title of the page is 'My Awesome Blog'."]
+  }
+]

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ARIA Heavy Test</title>
+</head>
+<body>
+    <h1>Accessibility Test</h1>
+
+    <div role="button" tabindex="0" aria-label="Close dialog">X</div>
+
+    <nav aria-label="Main Navigation">
+        <a href="/dashboard" role="link" aria-label="Go to user dashboard">My Dashboard</a>
+    </nav>
+
+    <form>
+        <label for="search-input">Search</label>
+        <input type="search" id="search-input" aria-label="Search the site">
+        <button type="submit" aria-label="Submit search">Go</button>
+    </form>
+
+    <div aria-hidden="true">
+        <p>This content should be ignored by the parser.</p>
+        <a href="/hidden-link">Hidden Link</a>
+    </div>
+
+</body>
+</html>

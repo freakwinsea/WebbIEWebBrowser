@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Messy Page Test</title>
+</head>
+<body>
+    <h1>Welcome</p> <!-- Mismatched tag -->
+
+    <div>
+        <p>Here is a link without an href.</p>
+        <a>I am not a link.</a>
+    </div>
+
+    <!-- Unlabeled form controls -->
+    <form>
+        <input type="text" name="first_name" placeholder="First Name">
+        <br>
+        <input type="submit" value="Submit Here">
+    </form>
+
+    <div>
+        <p>A link with no text content: <a href="/empty"></a></p>
+    </div>
+
+    <button>
+        <p>A button with a paragraph inside</p>
+    </button>
+
+    <div style="display: none;">
+        <p>This text is invisible and should not be parsed.</p>
+    </div>
+
+</body>
+</html>

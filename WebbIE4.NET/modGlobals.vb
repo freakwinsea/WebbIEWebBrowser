@@ -71,6 +71,10 @@ Module modGlobals
     ''' A global reference to the main application form.
     ''' </summary>
     Public gFrmMain As frmMain
+    ''' <summary>
+    ''' Stores the raw JSON output from the last run of dom-parser.js, for testing purposes.
+    ''' </summary>
+    Public gLastParserResult As String
 
     ''' <summary>
     ''' The only time that frmWeb is allowed to get focus is when we are trying

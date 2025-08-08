@@ -1,0 +1,50 @@
+[
+  {
+    "id": "webbie-id-0",
+    "type": "link",
+    "text": "Home",
+    "href": "/home"
+  },
+  {
+    "id": "webbie-id-1",
+    "type": "link",
+    "text": "Products",
+    "href": "/products"
+  },
+  {
+    "id": "webbie-id-2",
+    "type": "link",
+    "text": "Desktops",
+    "href": "/products/desktops"
+  },
+  {
+    "id": "webbie-id-3",
+    "type": "link",
+    "text": "Laptops",
+    "href": "/products/laptops"
+  },
+  {
+    "id": "webbie-id-4",
+    "type": "link",
+    "text": "Gaming Laptops",
+    "href": "/products/laptops/gaming"
+  },
+  {
+    "id": "webbie-id-5",
+    "type": "link",
+    "text": "Business Laptops",
+    "href": "/products/laptops/business"
+  },
+  {
+    "id": "webbie-id-6",
+    "type": "link",
+    "text": "About Us",
+    "href": "/about"
+  },
+  {
+    "id": "webbie-id-7",
+    "type": "link",
+    "text": "Contact",
+    "href": "/contact"
+  }
+]

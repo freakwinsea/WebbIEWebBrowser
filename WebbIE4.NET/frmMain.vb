@@ -1925,15 +1925,133 @@ errorHandler:
     ''' Process the loading HTML object model and display it as text. Call this after refresh, page navigation, or any time
     ''' you need to update this view to reflect a change to the DOM.
     ''' </summary>
+    Private _testCompletionSource As TaskCompletionSource(Of Boolean)
+
+    Private Class GoldenTestCase
+        Public Property name As String
+        Public Property user_command As String
+        Public Property mock_dom_content As String
+        Public Property expected_tool As String
+        Public Property expected_args As List(Of String)
+    End Class
+
+    Private Async Sub btnRunTests_Click(sender As Object, e As EventArgs) Handles btnRunTests.Click
+        Dim overallResults As New System.Text.StringBuilder()
+        Dim totalPassed As Integer = 0
+        Dim totalFailed As Integer = 0
+
+        ' ********** Layer 1: DOM Parser Tests **********
+        overallResults.AppendLine("--- LAYER 1: DOM Parser Tests ---")
+        Dim layer1Passed As Integer = 0
+        Dim layer1Failed As Integer = 0
+        Try
+            Dim testDirectory As String = System.IO.Path.Combine(Application.StartupPath, "Tests", "mock_pages")
+            If Not System.IO.Directory.Exists(testDirectory) Then
+                overallResults.AppendLine("FAIL: Test directory not found: " & testDirectory)
+                layer1Failed += 1
+            Else
+                Dim testFiles = System.IO.Directory.GetFiles(testDirectory, "*.html")
+                For Each testFile As String In testFiles
+                    _testCompletionSource = New TaskCompletionSource(Of Boolean)()
+                    Dim fileUri As New Uri(testFile)
+                    modGlobals.gWebHost.webMain.CoreWebView2.Navigate(fileUri.AbsoluteUri)
+                    Await _testCompletionSource.Task
+
+                    Dim actualJson As String = modGlobals.gLastParserResult
+                    Dim expectedFile As String = testFile.Replace(".html", ".expected.json")
+                    Dim expectedJson As String = If(System.IO.File.Exists(expectedFile), System.IO.File.ReadAllText(expectedFile), "{}")
+
+                    Dim normalizedActual = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(actualJson))
+                    Dim normalizedExpected = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(expectedJson))
+
+                    If normalizedActual = normalizedExpected Then
+                        layer1Passed += 1
+                        overallResults.AppendLine($"PASS: {System.IO.Path.GetFileName(testFile)}")
+                    Else
+                        layer1Failed += 1
+                        overallResults.AppendLine($"FAIL: {System.IO.Path.GetFileName(testFile)}")
+                    End If
+                Next
+            End If
+        Catch ex As Exception
+            layer1Failed += 1
+            overallResults.AppendLine("FATAL ERROR in Layer 1: " & ex.Message)
+        Finally
+            _testCompletionSource = Nothing
+        End Try
+        totalPassed += layer1Passed
+        totalFailed += layer1Failed
+        overallResults.AppendLine($"Layer 1 Complete. Passed: {layer1Passed}, Failed: {layer1Failed}")
+        overallResults.AppendLine("------------------------------------")
+        overallResults.AppendLine()
+
+
+        ' ********** Layer 2: LLM Logic Tests **********
+        overallResults.AppendLine("--- LAYER 2: LLM Logic Tests ---")
+        Dim layer2Passed As Integer = 0
+        Dim layer2Failed As Integer = 0
+        Try
+            Me.ToolHost.IsInTestMode = True
+            Dim goldenDatasetFile As String = System.IO.Path.Combine(Application.StartupPath, "Tests", "golden_dataset.json")
+            If Not System.IO.File.Exists(goldenDatasetFile) Then
+                layer2Failed += 1
+                overallResults.AppendLine("FAIL: golden_dataset.json not found.")
+            Else
+                Dim datasetJson = System.IO.File.ReadAllText(goldenDatasetFile)
+                Dim testCases = JsonConvert.DeserializeObject(Of List(Of GoldenTestCase))(datasetJson)
+
+                For Each testCase As GoldenTestCase In testCases
+                    Me.ToolHost.LastToolCalled = ""
+                    Me.ToolHost.LastArgsCalled = Nothing
+
+                    Dim script = $"window.aiProcess(`{testCase.mock_dom_content.Replace("`", "\`")}`, `{testCase.user_command.Replace("`", "\`")}`);"
+                    Await modGlobals.gWebHost.webMain.CoreWebView2.ExecuteScriptAsync(script)
+
+                    ' Compare results
+                    If Me.ToolHost.LastToolCalled.ToLower() = testCase.expected_tool.ToLower() AndAlso
+                       Me.ToolHost.LastArgsCalled.SequenceEqual(testCase.expected_args) Then
+                        layer2Passed += 1
+                        overallResults.AppendLine($"PASS: {testCase.name}")
+                    Else
+                        layer2Failed += 1
+                        overallResults.AppendLine($"FAIL: {testCase.name}")
+                        overallResults.AppendLine($"  Expected: {testCase.expected_tool}({String.Join(", ", testCase.expected_args)})")
+                        overallResults.AppendLine($"  Actual:   {Me.ToolHost.LastToolCalled}({String.Join(", ", Me.ToolHost.LastArgsCalled)})")
+                    End If
+                Next
+            End If
+        Catch ex As Exception
+            layer2Failed += 1
+            overallResults.AppendLine("FATAL ERROR in Layer 2: " & ex.Message)
+        Finally
+            Me.ToolHost.IsInTestMode = False
+        End Try
+        totalPassed += layer2Passed
+        totalFailed += layer2Failed
+        overallResults.AppendLine($"Layer 2 Complete. Passed: {layer2Passed}, Failed: {layer2Failed}")
+        overallResults.AppendLine("------------------------------------")
+
+
+        ' ********** Final Summary **********
+        Dim summary As String = $"Test run complete. Total Passed: {totalPassed}, Total Failed: {totalFailed}" & vbCrLf & vbCrLf & overallResults.ToString()
+        MessageBox.Show(summary, "Test Results", MessageBoxButtons.OK, If(totalFailed > 0, MessageBoxIcon.Error, MessageBoxIcon.Information))
+    End Sub
+
+    ''' <summary>
+    ''' Process the loading HTML object model and display it as text. Call this after refresh, page navigation, or any time
+    ''' you need to update this view to reflect a change to the DOM.
+    ''' </summary>
     Private Async Sub ParseDocument()
         If modGlobals.gClosing OrElse mFormClosing Then
             Exit Sub
         End If
 
         Try
-            ' Tell user we're working
-            staMain.Items.Item(0).Text = modI18N.GetText("Examining")
-            Call Application.DoEvents()
+            ' Tell user we're working, unless we're in a test run
+            If _testCompletionSource Is Nothing OrElse _testCompletionSource.Task.IsCompleted Then
+                staMain.Items.Item(0).Text = modI18N.GetText("Examining")
+                Call Application.DoEvents()
+            End If
 
             ' Clear old data
             Call ClearPageData()
@@ -1943,12 +2061,15 @@ errorHandler:
 
             ' Execute the script to get interactable elements as JSON
             Dim jsonResult As String = Await modGlobals.gWebHost.webMain.CoreWebView2.ExecuteScriptAsync(parserScript)
+            modGlobals.gLastParserResult = jsonResult ' Store for testing
 
             ' The result is a JSON string literal. We need to un-escape and parse it.
             If String.IsNullOrWhiteSpace(jsonResult) OrElse jsonResult = "null" OrElse jsonResult.Length < 3 Then
                 ' Script failed or returned nothing
                 staMain.Items.Item(0).Text = modI18N.GetText("Done") ' Page might be empty
                 Call SetText("") ' Clear the text view
+                ' If in a test run, signal completion
+                _testCompletionSource?.TrySetResult(True)
                 Return
             End If
 
@@ -2021,23 +2142,30 @@ errorHandler:
             ' Display the result
             Call DisplayOutput()
 
-            ' Update UI state
-            btnStop.Enabled = False
-            btnRefresh.Enabled = True
-            staMain.Items.Item(0).Text = modI18N.GetText("Done")
-            mnuLinksViewlinks.Enabled = (gInteractableElements.Count > 0)
-            cboAddress.SelectionLength = 0
-            cboAddress.Refresh()
-            Call txtText.Focus()
-            Application.DoEvents()
-            txtText.SelectionLength = 0
+            ' Update UI state, unless in a test run
+            If _testCompletionSource Is Nothing OrElse _testCompletionSource.Task.IsCompleted Then
+                btnStop.Enabled = False
+                btnRefresh.Enabled = True
+                staMain.Items.Item(0).Text = modI18N.GetText("Done")
+                mnuLinksViewlinks.Enabled = (gInteractableElements.Count > 0)
+                cboAddress.SelectionLength = 0
+                cboAddress.Refresh()
+                Call txtText.Focus()
+                Application.DoEvents()
+                txtText.SelectionLength = 0
+            End If
 
         Catch ex As Exception
             Debug.Print("Exception in ParseDocument: " & ex.Message)
             staMain.Items.Item(0).Text = modI18N.GetText("Error")
         Finally
-            Call PlayDoneSound()
-            Call StopBusyAnimation()
+            ' If in a test run, signal completion
+            _testCompletionSource?.TrySetResult(True)
+            ' Only play sounds if not in a test run
+            If _testCompletionSource Is Nothing OrElse _testCompletionSource.Task.IsCompleted Then
+                Call PlayDoneSound()
+                Call StopBusyAnimation()
+            End If
         End Try
     End Sub
 
@@ -3181,4 +3309,196 @@ errorHandler:
             MessageBox.Show("An error occurred while communicating with the AI assistant: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
     End Sub
+
+#Region "Test Harness"
+    Private _testCompletionSource As TaskCompletionSource(Of Boolean)
+
+    Private Async Sub btnRunTests_Click(sender As Object, e As EventArgs) Handles btnRunTests.Click
+        Dim testResults As New System.Text.StringBuilder()
+        Dim testsPassed As Integer = 0
+        Dim testsFailed As Integer = 0
+
+        Try
+            Dim testDirectory As String = System.IO.Path.Combine(Application.StartupPath, "Tests", "mock_pages")
+            If Not System.IO.Directory.Exists(testDirectory) Then
+                MessageBox.Show("Test directory not found: " & testDirectory, "Test Runner Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+                Return
+            End If
+
+            Dim testFiles = System.IO.Directory.GetFiles(testDirectory, "*.html")
+
+            For Each testFile As String In testFiles
+                _testCompletionSource = New TaskCompletionSource(Of Boolean)()
+
+                Dim fileUri As New Uri(testFile)
+                modGlobals.gWebHost.webMain.CoreWebView2.Navigate(fileUri.AbsoluteUri)
+
+                Await _testCompletionSource.Task
+
+                Dim actualJson As String = modGlobals.gLastParserResult
+                Dim expectedFile As String = testFile.Replace(".html", ".expected.json")
+                Dim expectedJson As String = ""
+
+                If System.IO.File.Exists(expectedFile) Then
+                    expectedJson = System.IO.File.ReadAllText(expectedFile)
+                End If
+
+                ' Normalize JSON for comparison
+                Dim normalizedActual = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(actualJson))
+                Dim normalizedExpected = JsonConvert.SerializeObject(JsonConvert.DeserializeObject(expectedJson))
+
+                If normalizedActual = normalizedExpected Then
+                    testsPassed += 1
+                    testResults.AppendLine($"PASS: {System.IO.Path.GetFileName(testFile)}")
+                Else
+                    testsFailed += 1
+                    testResults.AppendLine($"FAIL: {System.IO.Path.GetFileName(testFile)}")
+                    testResults.AppendLine("--- EXPECTED ---")
+                    testResults.AppendLine(normalizedExpected)
+                    testResults.AppendLine("--- ACTUAL ---")
+                    testResults.AppendLine(normalizedActual)
+                    testResults.AppendLine("----------------")
+                End If
+            Next
+
+            Dim summary As String = $"Test run complete. Passed: {testsPassed}, Failed: {testsFailed}" & vbCrLf & vbCrLf & testResults.ToString()
+            MessageBox.Show(summary, "Test Results", MessageBoxButtons.OK, If(testsFailed > 0, MessageBoxIcon.Error, MessageBoxIcon.Information))
+
+        Catch ex As Exception
+            MessageBox.Show("An error occurred during the test run: " & ex.Message, "Test Runner Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+    End Sub
+
+    ''' <summary>
+    ''' Process the loading HTML object model and display it as text. Call this after refresh, page navigation, or any time
+    ''' you need to update this view to reflect a change to the DOM.
+    ''' </summary>
+    Private Async Sub ParseDocument()
+        If modGlobals.gClosing OrElse mFormClosing Then
+            Exit Sub
+        End If
+
+        Try
+            ' Tell user we're working, unless we're in a test run
+            If _testCompletionSource Is Nothing OrElse _testCompletionSource.Task.IsCompleted Then
+                staMain.Items.Item(0).Text = modI18N.GetText("Examining")
+                Call Application.DoEvents()
+            End If
+
+            ' Clear old data
+            Call ClearPageData()
+
+            ' Read the DOM parser script from resources
+            Dim parserScript As String = My.Resources.dom_parser
+
+            ' Execute the script to get interactable elements as JSON
+            Dim jsonResult As String = Await modGlobals.gWebHost.webMain.CoreWebView2.ExecuteScriptAsync(parserScript)
+            modGlobals.gLastParserResult = jsonResult ' Store for testing
+
+            ' The result is a JSON string literal. We need to un-escape and parse it.
+            If String.IsNullOrWhiteSpace(jsonResult) OrElse jsonResult = "null" OrElse jsonResult.Length < 3 Then
+                ' Script failed or returned nothing
+                staMain.Items.Item(0).Text = modI18N.GetText("Done") ' Page might be empty
+                Call SetText("") ' Clear the text view
+                ' If in a test run, signal completion
+                _testCompletionSource?.TrySetResult(True)
+                Return
+            End If
+
+            ' Deserialize the JSON string into our list of elements
+            ' ExecuteScriptAsync returns a JSON-encoded *string*. So we must first deserialize the string itself,
+            ' then deserialize the content of that string.
+            Dim jsonContent As String = JsonConvert.DeserializeObject(Of String)(jsonResult)
+            gInteractableElements = JsonConvert.DeserializeObject(Of List(Of InteractableElement))(jsonContent)
+
+            ' Reset flags
+            mCropped = False
+
+            ' Build the output for the text view
+            mOutput = New System.Text.StringBuilder(32000)
+
+            ' TODO: Check for RSS feed link separately if needed
+            ' gRSSFeedURL = Await CheckForRssAsync() ' This would need a new helper
+
+            ' Process the list of elements to build the text display
+            Dim i As Integer = 0
+            For Each element As InteractableElement In gInteractableElements
+                Dim line As String = ""
+                Dim prefix As String = ""
+                Dim numberString As String = If(My.Settings.NumberLinks, $" [{i}]", "")
+
+                Select Case element.type
+                    Case "link"
+                        prefix = ID_LINK
+                        line = $"{prefix}{numberString}: {element.text}"
+                    Case "button", "submit", "reset"
+                        prefix = If(element.type = "submit", ID_SUBMIT, If(element.type = "reset", ID_RESET, ID_BUTTON))
+                        line = $"{prefix}{numberString}: ({element.text})"
+                    Case "text", "search", "email", "url", "tel"
+                        prefix = ID_TEXTBOX
+                        line = $"{prefix}{numberString}: {element.text}"
+                    Case "password"
+                        prefix = ID_PASSWORD
+                        line = $"{prefix}{numberString}: {element.text}"
+                    Case "textarea"
+                        prefix = ID_TEXTAREA
+                        line = $"{prefix}{numberString}: {element.text}"
+                    Case "checkbox"
+                        prefix = ID_CHECKBOX
+                        line = $"{prefix}{numberString}: {element.text}"
+                    Case "radio"
+                        prefix = ID_RADIO
+                        line = $"{prefix}{numberString}: {element.text}"
+                    Case "select-one", "select-multiple"
+                        prefix = ID_SELECT
+                        line = $"{prefix}{numberString}: {element.text}"
+                    Case "file"
+                        prefix = ID_FILE
+                        line = $"{prefix}{numberString}: {element.text}"
+                    Case "h1", "h2", "h3", "h4", "h5", "h6"
+                        line = $"Heading {element.type.Substring(1)}: {element.text}"
+                    Case "p", "div", "span", "text", "main", "article"
+                        ' For simple text blocks, just show the text. We might want to filter short/empty ones.
+                        If Not String.IsNullOrWhiteSpace(element.text) Then
+                            line = element.text
+                        End If
+                    ' Add other cases as needed for VIDEO, AUDIO, etc.
+                End Select
+
+                If Not String.IsNullOrWhiteSpace(line) Then
+                    Call mOutput.AppendLine(line)
+                End If
+                i += 1
+            Next
+
+            ' Display the result
+            Call DisplayOutput()
+
+            ' Update UI state, unless in a test run
+            If _testCompletionSource Is Nothing OrElse _testCompletionSource.Task.IsCompleted Then
+                btnStop.Enabled = False
+                btnRefresh.Enabled = True
+                staMain.Items.Item(0).Text = modI18N.GetText("Done")
+                mnuLinksViewlinks.Enabled = (gInteractableElements.Count > 0)
+                cboAddress.SelectionLength = 0
+                cboAddress.Refresh()
+                Call txtText.Focus()
+                Application.DoEvents()
+                txtText.SelectionLength = 0
+            End If
+
+        Catch ex As Exception
+            Debug.Print("Exception in ParseDocument: " & ex.Message)
+            staMain.Items.Item(0).Text = modI18N.GetText("Error")
+        Finally
+            ' If in a test run, signal completion
+            _testCompletionSource?.TrySetResult(True)
+            ' Only play sounds if not in a test run
+            If _testCompletionSource Is Nothing OrElse _testCompletionSource.Task.IsCompleted Then
+                Call PlayDoneSound()
+                Call StopBusyAnimation()
+            End If
+        End Try
+    End Sub
+#End Region
 End Class

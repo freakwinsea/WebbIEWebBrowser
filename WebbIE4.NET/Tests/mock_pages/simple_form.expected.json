@@ -1,0 +1,38 @@
+[
+  {
+    "id": "webbie-id-0",
+    "type": "h1",
+    "text": "Login",
+    "href": ""
+  },
+  {
+    "id": "webbie-id-1",
+    "type": "text",
+    "text": "Username:",
+    "href": ""
+  },
+  {
+    "id": "webbie-id-2",
+    "type": "text",
+    "text": "",
+    "href": ""
+  },
+  {
+    "id": "webbie-id-3",
+    "type": "text",
+    "text": "Password:",
+    "href": ""
+  },
+  {
+    "id": "webbie-id-4",
+    "type": "password",
+    "text": "",
+    "href": ""
+  },
+  {
+    "id": "webbie-id-5",
+    "type": "submit",
+    "text": "Log In",
+    "href": ""
+  }
+]

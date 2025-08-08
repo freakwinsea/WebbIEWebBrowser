@@ -1,0 +1,38 @@
+[
+  {
+    "id": "webbie-id-0",
+    "type": "h1",
+    "text": "Accessibility Test",
+    "href": ""
+  },
+  {
+    "id": "webbie-id-1",
+    "type": "button",
+    "text": "Close dialog",
+    "href": ""
+  },
+  {
+    "id": "webbie-id-2",
+    "type": "link",
+    "text": "Go to user dashboard",
+    "href": "/dashboard"
+  },
+  {
+    "id": "webbie-id-3",
+    "type": "text",
+    "text": "Search",
+    "href": ""
+  },
+  {
+    "id": "webbie-id-4",
+    "type": "search",
+    "text": "Search the site",
+    "href": ""
+  },
+  {
+    "id": "webbie-id-5",
+    "type": "submit",
+    "text": "Submit search",
+    "href": ""
+  }
+]

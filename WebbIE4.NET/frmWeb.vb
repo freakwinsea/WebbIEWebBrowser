@@ -15,15 +15,23 @@ Public Class frmWeb
         ' to ensure the control handle has been created.
     End Sub
 
-    Private Sub frmWeb_Load(sender As Object, e As EventArgs) Handles Me.Load
+    Private Async Sub frmWeb_Load(sender As Object, e As EventArgs) Handles Me.Load
         AddHandler webMain.CoreWebView2InitializationCompleted, AddressOf webMain_CoreWebView2InitializationCompleted
-        ' The initialization is triggered implicitly by setting the Source or by accessing the CoreWebView2 property.
-        ' We can also explicitly trigger it. Let's ensure it starts.
-        Call webMain.EnsureCoreWebView2Async(Nothing)
+
+        ' Enable remote debugging for Playwright E2E testing
+        Dim envOptions = New CoreWebView2EnvironmentOptions With {
+            .AdditionalBrowserArguments = "--remote-debugging-port=9222"
+        }
+        Dim webView2Env = Await CoreWebView2Environment.CreateAsync(Nothing, Nothing, envOptions)
+
+        Await webMain.EnsureCoreWebView2Async(webView2Env)
     End Sub
 
     Private Async Sub webMain_CoreWebView2InitializationCompleted(sender As Object, e As CoreWebView2InitializationCompletedEventArgs)
         If e.IsSuccess Then
+            ' Signal that WebView2 is ready for test automation
+            Console.WriteLine("WebView2 initialized")
+
             ' CoreWebView2 is ready. We can now add event handlers to it.
             AddHandler webMain.CoreWebView2.NavigationStarting, AddressOf CoreWebView2_NavigationStarting
             AddHandler webMain.CoreWebView2.NavigationCompleted, AddressOf CoreWebView2_NavigationCompleted
